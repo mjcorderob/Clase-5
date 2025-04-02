@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Partiendo la quinta clase</title>
+        <style>
+            * { margin: 0; padding: 0; }
+            body { font-family: monospace; text-align: center; background: #FFDBEC; }
+            table { margin: 5vh auto; text-align: left;}
+            table tr td { padding: 0.3rem; }
+            table tr td:nth-child(1) { color: #aaa; text-align: right; padding-right: 1rem;  color: #DF9BBC;}
+            table tr td:nth-child(2) { font-weight: bolder; }
+            
+            aside {
+                width: min(90%, 500px);                     
+                margin: 5vh auto 10vh auto;                  
+                text-align: left;                            
+                background: rgba(255,255,255,.2);                         
+                box-shadow: 0 0 2px #ddd; 
+                color: #DF9BBC;;                   
+                border-radius: 5px;                          
+                }
+
+            select {
+                margin: 1rem;                               
+                padding: 0.2rem 0;                           
+                width: calc(100% - 2rem);                    
+                font-size: 0.8rem; 
+                color: #DF9BBC;                          
+                font-family: monospace;                      
+                }
+
+            ol {
+                padding: 0 2rem 2rem 3rem;                   
+                }
+
+            ol li {
+                 margin-bottom: 0.5rem;                     
+                }
+            ol li a{text-decoration: none; color: #777; transition: color ease .25s;}
+            ol li a:hover {color:#000; transition: color ease .25s;}
+        </style>
+    </head>
+    <body>
+
+        <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+     <symbol id="pdf" viewBox="0 0 16 16">
+        <path fill-rule="evenodd" d="M6 1h6v7a.5.5 0 0 1-.757.429L9 7.083 6.757 8.43A.5.5 0 0 1 6 8z"/>
+         <path d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-1h1v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v1H1V2a2 2 0 0 1 2-2"/>
+        <path d="M1 5v-.5a.5.5 0 0 1 1 0V5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1zm0 3v-.5a.5.5 0 0 1 1 0V8h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1zm0 3v-.5a.5.5 0 0 1 1 0v.5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1z"/>
+
+     </symbol>
+        </svg>
+        <table></table>
+        <aside>
+            <select>
+                <option value="">Selecciona...</option>
+                <option value="ALLARD, J.">José Allard</option>
+                <option value="ALVAREZ, P.">Pedro Álvarez</option>
+                <option value="CARO, I">Iván Caro</option>
+                <option value="DURAN, A.">Alejandro Durán</option>
+                <option value="FIGUEROA, B.">Bernardita Figueroa</option>
+                <option value="GONZÁLEZ, A.">Alberto González</option>
+                <option value="MANNS, P">Patricia Manns</option>
+                <option value="MOLLENHAUER, K.">Katherine Mollenhauer</option>
+                <option value="MORENO, P.">Paola Moreno</option>
+                <option value="RAMIREZ, R.">Rodrigo Ramirez</option>
+                <option value="ULIBARRI, X.">Ximena Ulibarri</option>
+                <option value="VIVANCO, T.">Tomás Vivanco</option>
+            </select>
+            <ol></ol>
+        </aside>
+    <script>
+            const visualizacion = document.querySelector("table");
+            var data;
+            function plecas(numero){
+                var visual = "";
+                for(let x = 0; x < numero; x++){
+                    visual = visual+"🧞‍♂️";
+                }
+                return visual;
+            }
+            async function datos() {
+                const consulta = await fetch("https://raw.githubusercontent.com/profesorfaco/opr/main/clase-05/datos.json");
+                data = await consulta.json();
+                // ya tengo los datos de proyectos con nota 7
+                console.log(data);
+                // ahora armo un arreglo que tengan sólo nombres de Profes'
+                var profes = [];
+                data.forEach((x) => {profes.push(x.tutor)});
+                console.log(profes);
+                // https://gist.github.com/ralphcrisostomo/3141412?permalink_comment_id=2315571#gistcomment-2315571 
+                // puedo contar las veces que se repiten los nombres de cada Profe'
+                var conteo = profes.reduce((a,b)=>((a[a.findIndex(d=>d.profesor===b)]||a[a.push({profesor:b,veces:0})-1]).veces++,a),[]);
+                console.log(conteo);
+                // creo otra variable, a la que empujaré nombres de Profes' con una condición
+                var nombres = [];
+                conteo.forEach((x) => {
+                    visualizacion.innerHTML+=`<tr><td>${x.profesor}</td><td>${plecas(x.veces)}</td></tr>`;
+                    if (x.veces > 3) { nombres.push(x.profesor) }
+                });
+                // revisemos el siguiente dato en la consola para avanzar
+                console.log("HAN GUIADO A MÁS DE TRES NOTAS SIETE: " + nombres);
+
+                document.querySelector("select").addEventListener("change", function () {document.querySelector("ol").innerHTML = estudiantes (this.value) }) 
+                }
+            
+            datos().catch((error) => console.error(error));
+
+            function estudiantes(p){
+                var listado = "";
+                data.forEach((x) => { if (x.tutor == p) { if (x.pdf) {listado += `<li>${x.student} (<a href="${x.pdf}" target="_blank"><svg width="15" height="15"><use href="#pdf"></use></svg> memoria</a>)</li>`; } else {
+                    listado += `<li>${x.student}</li>`;
+                }
+                }
+            
+        });
+                return listado;
+            }
+        </script>
+    </body>
+</html>
